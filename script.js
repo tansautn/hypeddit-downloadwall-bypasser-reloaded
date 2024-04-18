@@ -4,7 +4,7 @@
 // @version      2024-04-04
 // @description  Bypass the fangates. Soundcloud and Spotify accounts are mandatory! Please make sure to log them on first before running the script!
 // @author       fan1200
-// @match        https://hypeddit.com/track/*
+// @match        https://hypeddit.com/*
 // @match        https://secure.soundcloud.com/connect*
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=hypeddit.com
 // @grant        none
@@ -20,8 +20,19 @@
         auto_close: true,
         auto_close_timeout_in_ms: 5000
     }
-
-    if (window.location.host.includes('soundcloud.com')) {
+    const isScConnectUrl = () => {
+        return window.location.host.includes('soundcloud.com') &&
+        (window.location.pathname.indexOf('connect') !== -1);
+    };
+    const isHypedTrackUrl = () => {
+        return window.location.host.includes('hypeddit.com') && 
+        (window.location.pathname.split('/').pop().match(/^[a-zA-Z0-9]{6}$/) !== null);
+    };
+    if (!isScConnectUrl() && !isHyppedTrackUrl()) {
+        console.info('current page is not hypped track. Quiting.');
+        return;
+    }
+    if (isScConnectUrl()) {
         const button = document.querySelector('button[id="submit_signup"]');
 
         if (button) {
@@ -47,9 +58,7 @@
 
             setTimeout(retryClick, 200);
         }
-    }
-
-
+    }    
     window.handleFollowOptions = function(containerElementId, skipperId)
     {
         if(document.getElementById(containerElementId) !== null) {
@@ -152,84 +161,86 @@
         window.handleYoutube();
     }
 
-
-    const targetNode = document.getElementById("myCarousel");
-
-    const config = { attributes: true, childList: true, subtree: true };
-
-
-    let prevStepContent = null;
-    const callback = (mutationList, observer) => {
-        for (const mutation of mutationList) {
-
-            if (mutation.type === "attributes") {
-                const stepContent = document.querySelector('.fangate-slider-content:not(.move-left)');
-
-                if(stepContent !== prevStepContent) {
-
-                    const stepClassList = stepContent.classList;
-
-                    if(stepClassList.contains("sp|ig|email")) {
-                        window.handleMultiPortal();
+    if (isHyppedTrackUrl()) {
+        const targetNode = document.getElementById("myCarousel");
+    
+        const config = { attributes: true, childList: true, subtree: true };
+    
+    
+        let prevStepContent = null;
+        const callback = (mutationList, observer) => {
+            for (const mutation of mutationList) {
+    
+                if (mutation.type === "attributes") {
+                    const stepContent = document.querySelector('.fangate-slider-content:not(.move-left)');
+    
+                    if(stepContent !== prevStepContent) {
+    
+                        const stepClassList = stepContent.classList;
+    
+                        if(stepClassList.contains("sp|ig|email")) {
+                            window.handleMultiPortal();
+                        }
+    
+                        if(stepClassList.contains("email|sc")) {
+                            window.handleEmailSoundCloud();
+                        }
+    
+                        if(stepClassList.contains("sc|yt")) {
+                            window.handleSoundCloudYoutube();
+                        }
+    
+                        if (stepClassList.contains("sc")) {
+                            window.handleSoundCloud();
+                        }
+    
+                        if (stepClassList.contains("ig")) {
+                            window.handleInstagram();
+                        }
+    
+                        if (stepClassList.contains("dw")) {
+                            window.handleDownload();
+                        }
+    
+                        if (stepClassList.contains("yt")) {
+                            window.handleYoutube();
+                        }
+    
+                        if (stepClassList.contains("sp")) {
+                            window.handleSpotify();
+                        }
+    
+                        if (stepClassList.contains("email")) {
+                            window.handleEmail();
+                        }
+    
+                        if (stepClassList.contains("tk")) {
+                            window.handleTikTok();
+                        }
+    
+                        if (stepClassList.contains("fb")) {
+                            window.handleFacebook();
+                        }
                     }
-
-                    if(stepClassList.contains("email|sc")) {
-                        window.handleEmailSoundCloud();
-                    }
-
-                    if(stepClassList.contains("sc|yt")) {
-                        window.handleSoundCloudYoutube();
-                    }
-
-                    if (stepClassList.contains("sc")) {
-                        window.handleSoundCloud();
-                    }
-
-                    if (stepClassList.contains("ig")) {
-                        window.handleInstagram();
-                    }
-
-                    if (stepClassList.contains("dw")) {
-                        window.handleDownload();
-                    }
-
-                    if (stepClassList.contains("yt")) {
-                        window.handleYoutube();
-                    }
-
-                    if (stepClassList.contains("sp")) {
-                        window.handleSpotify();
-                    }
-
-                    if (stepClassList.contains("email")) {
-                        window.handleEmail();
-                    }
-
-                    if (stepClassList.contains("tk")) {
-                        window.handleTikTok();
-                    }
-
-                    if (stepClassList.contains("fb")) {
-                        window.handleFacebook();
-                    }
+    
+                    prevStepContent = stepContent;
                 }
-
-                prevStepContent = stepContent;
             }
-        }
-    };
-
-
-    const observer = new MutationObserver(callback);
-
-    observer.observe(targetNode, config);
-
-    const _start = () => {
-        if(document.getElementById("downloadProcess") !== null) {
-            document.getElementById("downloadProcess").click();
-        }
-    };
-
-    window.setTimeout(_start, 800);
+        };
+    
+    
+        const observer = new MutationObserver(callback);
+    
+        observer.observe(targetNode, config);
+    
+        const _start = () => {
+            if(document.getElementById("downloadProcess") !== null) {
+                document.getElementById("downloadProcess").click();
+            }
+        };
+    
+        window.setTimeout(_start, 800);
+    }
+    
 
 })();
