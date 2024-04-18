@@ -28,7 +28,7 @@
         return window.location.host.includes('hypeddit.com') && 
         (window.location.pathname.split('/').pop().match(/^[a-zA-Z0-9]{6}$/) !== null);
     };
-    if (!isScConnectUrl() && !isHyppedTrackUrl()) {
+    if (!isScConnectUrl() && !isHypedTrackUrl()) {
         console.info('current page is not hypped track. Quiting.');
         return;
     }
@@ -161,7 +161,7 @@
         window.handleYoutube();
     }
 
-    if (isHyppedTrackUrl()) {
+    if (isHypedTrackUrl()) {
         const targetNode = document.getElementById("myCarousel");
     
         const config = { attributes: true, childList: true, subtree: true };
