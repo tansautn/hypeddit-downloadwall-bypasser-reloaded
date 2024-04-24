@@ -25,6 +25,7 @@
         (window.location.pathname.indexOf('connect') !== -1);
     };
     const isHypedTrackUrl = () => {
+        return window.location.host.includes('hypeddit.com');
         return window.location.host.includes('hypeddit.com') && 
         (window.location.pathname.split('/').pop().match(/^[a-zA-Z0-9]{6}$/) !== null);
     };
