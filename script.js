@@ -9,7 +9,8 @@
 // @match        https://secure.soundcloud.com/connect*
 // @match        https://secure.soundcloud.com/authorize*
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=hypeddit.com
-// @grant        none
+// @grant        unsafeWindow
+// @grant        window.close
 // ==/UserScript==
 
 ;(function() {
@@ -26,21 +27,14 @@
   }
   const pumpUrSoundHandler = function() {
     const steps = document.querySelectorAll('.fanpageDownload__item');
-    let isDomLoaded = false;
+    let isDomLoaded = true;
     let countStepDone = 0;
+    const SC = unsafeWindow.SC;
+    const $ = unsafeWindow.$;
     if(!window.hasOwnProperty('isPumpHandled')) {
       window.isPumpHandled = false;
     }
-    $(document).ready(() => {
-      console.info('dom ready for');
-      isDomLoaded = true;
-    });
-    // FIXME : why addEventListener not work?. Handler event not called by any thread ?
-    document.addEventListener('DOMContentLoaded', () => {
-      // isDomLoaded = true;
-      console.info('DOMContentLoaded');
 
-    });
     // Alternate method for anyone got "window.onpener" is Null - Like me :(
     // It's mostly caused by some blocking extension or related
     function simulateConnectUsingSdk() {
@@ -54,7 +48,7 @@
         return j;
       }
       catch(e) {
-        window.setTimeout(simulateConnectUsingSdk, 300);
+        setTimeout(simulateConnectUsingSdk, 300);
         return null;
       }
     }
@@ -63,31 +57,66 @@
       console.info('on callback for connect', this, arguments);
       let doneCond = localStorage.getItem('isPumpConnectDone');
       console.info('check connect done in callback', doneCond);
+
       if(!doneCond) {
-        window.setTimeout(callbackForSc, 300);
+        setTimeout(callbackForSc, 300);
+        return;
       }
+
       if(doneCond) {
         // Only current step have attribute data-href. So this simple selector is enough
         const t = document.querySelector('[data-href]');
         let accessToken;
-        // Taken from Pump's main.js
-        $.nette.ajax({
-          url : "/?do=mySoundcloudAccessToken"
-        }).success(function(e) {
+
+        const baseUrl = window.location.origin;
+
+        fetch(`${baseUrl}/?do=mySoundcloudAccessToken`, {
+          method  : 'GET',
+          headers : {
+            'X-Requested-With' : 'XMLHttpRequest'
+          }
+        })
+        .then(response => response.text())
+        .then(data => {
+          console.info('response data', data);
+          try {
+            data = JSON.parse(data);
+          }
+          catch(e) {
+            console.error('Error in parsing response data:', e);
+          }
+          accessToken = data.accessToken || '';
+
           const urlGet = t.dataset.href;
-          const params = new URLSearchParams(urlGet.split('?')[1]);
+          // Đảm bảo urlGet là URL đầy đủ
+          const fullUrlGet = urlGet.startsWith('http') ? urlGet : `${baseUrl}${urlGet.startsWith('/') ? '' : '/'}${urlGet}`;
+          const urlParts = fullUrlGet.split('?');
+          const urlBase = urlParts[0];
+          const params = new URLSearchParams(urlParts.length > 1 ? urlParts[1] : '');
+
           params.set('accessToken', accessToken);
           params.set('text', window.hypedditSettings.comment);
-          $.nette.ajax({
-            url : urlGet.split('?')[0] + '?' + params.toString()
-          }).then(function(e) {
-            console.info('done');
-            console.error(e);
-            // What should here ?
-            // window.location.reload();
+
+          return fetch(`${urlBase}?${params.toString()}`, {
+            method  : 'GET',
+            headers : {
+              'X-Requested-With' : 'XMLHttpRequest'
+            }
           });
+        })
+        //        .then(response => response.json())
+        .then(data => {
+          console.info('done');
+          data.text().then(text => {console.error(text);});
+          // What should here ?
+          // window.location.reload();
+        })
+        .catch(error => {
+          console.error('Error in fetch operation:', error);
+        })
+        .finally(() => {
+          localStorage.removeItem('isPumpConnectDone');
         });
-        localStorage.removeItem('isPumpConnectDone');
       }
     }
 
@@ -142,11 +171,11 @@
             // TODO : sessionStorage set value to check the connect process ?? - still does not work between windows
             // TODO : youtube does not require any validation. So just close it's modal
             // TODO : facebook need what to mark as done?, are okay when we simulate the form submit?
-            window.setTimeout((function pumpSimpleStepHandler() {
+            setTimeout((function pumpSimpleStepHandler() {
               return () => {
                 console.warn(!document.querySelector('#soundcloud-api') || !isDomLoaded, !document.querySelector('#soundcloud-api'), !isDomLoaded);
                 if(!document.querySelector('#soundcloud-api') || !isDomLoaded || !SC) {
-                  window.setTimeout(pumpSimpleStepHandler(), 300);
+                  setTimeout(pumpSimpleStepHandler(), 300);
                   console.info('no SC api or dom not ready yet, try in next 300 ms');
                   return;
                 }
@@ -165,7 +194,7 @@
             const commentPump = () => {
               console.warn(!document.querySelector('#soundcloud-api') || !isDomLoaded, !document.querySelector('#soundcloud-api'), !isDomLoaded);
               if(!document.querySelector('#soundcloud-api') || !isDomLoaded || !SC) {
-                window.setTimeout(commentPump, 300);
+                setTimeout(commentPump, 300);
                 console.info('no SC api or dom not ready yet, try in next 200 ms');
                 return;
               }
@@ -180,7 +209,7 @@
                 alternateMethodForPump();
               }
             };
-            window.setTimeout(commentPump, 300);
+            setTimeout(commentPump, 300);
             break;
         }
         window.isPumpHandled = true;
@@ -188,25 +217,37 @@
     });
     if(countStepDone === steps.length) {
       console.info('all steps done. Submit download form');
-      window.setTimeout(() => document.querySelector('#frm-freeDownloadForm').submit(), 1500);
+      setTimeout(() => document.querySelector('#frm-freeDownloadForm').submit(), 1500);
       return;
     }
   };
-  if(window.location.host.includes('pumpyoursound.com')) {
-    window._pumpUrSoundHandler = pumpUrSoundHandler;
-    console.info('Pump your mouth matched');
-    const uri = new URL(window.location.href);
+  if(location.host.includes('pumpyoursound.com')) {
+    const uri = new URL(location.href);
     if(uri.pathname.includes('/f/')) {
-      console.info('Run pumpUrSoundHandler');
-      return pumpUrSoundHandler();
+      let tryCount = 0;
+      const maxTries = 30;
+      const waitForSc = function() {
+        tryCount++;
+        if(tryCount > maxTries) {
+          return;
+        }
+        if(!unsafeWindow.SC) {
+          console.info('SC not ready yet, try in next 200 ms');
+          setTimeout(waitForSc, 200);
+        }
+        else {
+          pumpUrSoundHandler();
+        }
+      };
+      setTimeout(waitForSc, 200);
     }
     if(uri.searchParams.has('do') && uri.searchParams.get('do') === 'soundConnectAuth') {
-      // window.close() already loaded into window.load function already. So it's for "some one like me"
+      // window.close() already loaded into window.load function already. So it's for "someone like me"
       const pumpConnectHandler = function() {
         if(uri.searchParams.has('state') && uri.searchParams.has('code')) {
           console.info('pump connect close in 1.5 sec');
           localStorage.setItem('isPumpConnectDone', '1');
-          window.setTimeout(window.close, 15000);
+          setTimeout(window.close, 15000);
         }
       };
       console.info('Run pumpConnectHandler');
@@ -216,34 +257,26 @@
     return;
   }
 
-  if(window.location.host.includes("soundcloud.com")) {
-    const button = document.querySelector('button[type="submit"]');
+  if(location.host.includes("soundcloud.com")) {
+    let isDone = false;
+    const maxTries = 50;
+    let cou = 0;
 
-    if(button) {
-      button.click();
-    }
-    else {
-      let isDone = false;
-      const maxTries = 10;
-      let cou = 0;
-
-      const retryClick = () => {
-        const button = document.querySelector('button[type="submit"]');
-
-        if(button) {
-          button.click();
-          isDone = true;
+    const retryClick = () => {
+      const button = document.querySelector('button[type="submit"]');
+      if(button) {
+        button.click();
+        isDone = true;
+      }
+      else {
+        cou++;
+        if(cou < maxTries) {
+          setTimeout(retryClick, 200);
         }
-        else {
-          cou++;
-          if(cou < maxTries) {
-            setTimeout(retryClick, 200);
-          }
-        }
-      };
+      }
+    };
 
-      setTimeout(retryClick, 200);
-    }
+    setTimeout(retryClick, 200);
   }
 
   window.handleFollowOptions = function(containerElementId, skipperId) {
@@ -297,7 +330,7 @@
 
     if(window.hypedditSettings.auto_close) {
       const timeout = window.hypedditSettings.auto_close_timeout_in_ms;
-      window.setTimeout(function() {
+      setTimeout(function() {
         close();
       }, timeout);
     }
@@ -447,5 +480,5 @@
     }
   };
 
-  window.setTimeout(_start, 800);
+  setTimeout(_start, 800);
 })();
