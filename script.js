@@ -336,9 +336,12 @@
     }
   };
 
-  window.handleEmail = function() {
-    const email = window.hypedditSettings.email;
+
+    window.handleDownload = function () {
+      const email = window.hypedditSettings.email;
     const name = window.hypedditSettings.name;
+        console.log("DOWNLOAD")
+        document.getElementById("gateDownloadButton").click()
 
     if(document.getElementById("email_name") !== null) {
       document.getElementById("email_name").setAttribute("value", name);
@@ -391,8 +394,12 @@
 
 
   const targetNode = document.getElementById("myCarousel");
-
   const config = {attributes : true, childList : true, subtree : true};
+window.handleBandCamp = function() {
+        document.getElementById("skipper_bc").click()
+    }
+    
+    const targetNode = document.getElementById("myCarousel")
 
   let prevStepContent = null;
   const callback = (mutationList, observer) => {
@@ -409,9 +416,9 @@
             window.handleMultiPortal();
           }
 
-          if(stepClassList.contains("email|sc")) {
-            window.handleEmailSoundCloud();
-          }
+                    if (stepClassList.contains("tk|ig")) {
+                        window.handleTikTok()
+                    }
 
           if(stepClassList.contains("sc|yt")) {
             window.handleSoundCloudYoutube();
@@ -454,9 +461,12 @@
           window.handleEmail();
         }
 
-        if(stepClassList.contains("tk")) {
-          window.handleTikTok();
-        }
+
+                    if(stepClassList.contains("bc")) {
+                       window.handleBandCamp()
+                    }
+                }
+
 
         if(stepClassList.contains("fb")) {
           window.handleFacebook();
