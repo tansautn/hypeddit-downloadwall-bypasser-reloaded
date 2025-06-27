@@ -355,7 +355,10 @@
                 .setAttribute("value", email);
             document.getElementById("email_address").value = email;
         }
-
+        if (document.getElementById('download_email_step_hide_heading')) {
+            document.getElementById('gateDownloadButton').click();
+            return;
+        }
         document.getElementById("email_to_downloads_next").click();
     };
 
