@@ -13,8 +13,9 @@
 // @grant        window.close
 // ==/UserScript==
 
-;(function() {
+(function() {
   "use strict";
+  let targetNode;
   window.hypedditSettings = {
     email                    : "jouch@hippo.com",
     name                     : "Jojo",
@@ -222,6 +223,7 @@
     }
   };
   if(location.host.includes('pumpyoursound.com')) {
+    console.log('go in');
     const uri = new URL(location.href);
     if(uri.pathname.includes('/f/')) {
       let tryCount = 0;
@@ -290,196 +292,234 @@
       });
 
       document.getElementById(skipperId).click();
+
+
+      window.handleSoundCloud = function() {
+        console.log("SOUNDCLOUD");
+
+        const comment = window.hypedditSettings.comment;
+
+        if(document.getElementById("sc_comment_text") !== null) {
+          document
+          .getElementById("sc_comment_text")
+          .setAttribute("value", comment);
+        }
+
+        if(document.getElementById("step_sc") !== null) {
+          document.getElementById("step_sc").querySelector("a").click();
+        }
+      };
+
+      window.handleInstagram = function() {
+        console.log("INSTA");
+        window.handleFollowOptions("instagram_status", "skipper_ig_next");
+      };
+
+      window.handleYoutube = function() {
+        console.log("YOUTUBE");
+        window.handleFollowOptions("youtube_status", "skipper_yt_next");
+      };
+      if(document.getElementById("step_sc") !== null) {
+        document.getElementById("step_sc").querySelector("a").click();
+      }
     }
-  };
+    ;
 
-  window.handleSoundCloud = function() {
-    console.log("SOUNDCLOUD");
+    window.handleInstagram = function() {
+      console.log("INSTA");
+      window.handleFollowOptions("instagram_status", "skipper_ig_next");
+    };
 
-    const comment = window.hypedditSettings.comment;
+    window.handleYoutube = function() {
+      console.log("YOUTUBE");
+      window.handleFollowOptions("youtube_status", "skipper_yt_next");
+    };
 
-    if(document.getElementById("sc_comment_text") !== null) {
-      document
-      .getElementById("sc_comment_text")
-      .setAttribute("value", comment);
-    }
+    window.handleSpotify = function() {
+      console.log("SPOTIFY");
+      document.getElementById("step_sp").querySelector("a").click();
+    };
 
-    if(document.getElementById("step_sc") !== null) {
-      document.getElementById("step_sc").querySelector("a").click();
-    }
-  };
+    window.handleDownload = function() {
+      console.log("DOWNLOAD");
+      document.getElementById("gateDownloadButton").click();
 
-  window.handleInstagram = function() {
-    console.log("INSTA");
-    window.handleFollowOptions("instagram_status", "skipper_ig_next");
-  };
+      if(window.hypedditSettings.auto_close) {
+        const timeout = window.hypedditSettings.auto_close_timeout_in_ms;
+        setTimeout(function() {
+          close();
+        }, timeout);
+      }
+    };
 
-  window.handleYoutube = function() {
-    console.log("YOUTUBE");
-    window.handleFollowOptions("youtube_status", "skipper_yt_next");
-  };
+    window.handleDownload = function() {
+      console.log("DOWNLOAD");
+      downloadUnlimitedGate();
 
-  window.handleSpotify = function() {
-    console.log("SPOTIFY");
-    document.getElementById("step_sp").querySelector("a").click();
-  };
-
-  window.handleDownload = function() {
-    console.log("DOWNLOAD");
-    document.getElementById("gateDownloadButton").click();
-
-    if(window.hypedditSettings.auto_close) {
-      const timeout = window.hypedditSettings.auto_close_timeout_in_ms;
-      setTimeout(function() {
-        close();
-      }, timeout);
-    }
-  };
-
-  window.handleEmail = function() {
-    const email = window.hypedditSettings.email;
-    const name = window.hypedditSettings.name;
-
-    if(document.getElementById("email_name") !== null) {
-      document.getElementById("email_name").setAttribute("value", name);
-    }
-
-    if(document.getElementById("email_address") !== null) {
-      document
-      .getElementById("email_address")
-      .setAttribute("value", email);
-      document.getElementById("email_address").value = email;
-    }
-
-    document.getElementById("email_to_downloads_next").click();
-  };
-
-  window.handleTikTok = function() {
-    console.log("TIKTOK");
-    window.handleFollowOptions("tiktok_status", "skipper_tk_next");
-  };
-
-  window.handleFacebook = function() {
-    console.log("FACEBOOK");
-    document.getElementById("fbCarouselSocialSection").click();
-  };
-
-  window.handleMultiPortal = function() {
-    document.getElementById("step_email").previousElementSibling.click();
-    window.handleEmail();
-  };
-
-  window.handleEmailSoundCloud = function() {
-    document.getElementById("step_email").previousElementSibling.click();
-    window.handleEmail();
-  };
-
-  window.handleSoundCloudYoutube = function() {
-    document.getElementById("step_yt").previousElementSibling.click();
-    window.handleYoutube();
-  };
-  window.handleMixcloud = function() {
-    console.log("Mixcloud");
-    document.getElementById("skipper_mc").click();
-  };
+      if(window.hypedditSettings.auto_close) {
+        const timeout = window.hypedditSettings.auto_close_timeout_in_ms;
+        setTimeout(function() {
+          close();
+        }, timeout);
+      }
+    };
 
 
-  window.handleDonate = function() {
-    document.getElementById("step_dn").previousElementSibling.click();
-    document.getElementById("donation_next").click();
-  };
+    window.handleDownload = function() {
+      const email = window.hypedditSettings.email;
+      const name = window.hypedditSettings.name;
+      console.log("DOWNLOAD");
+      document.getElementById("gateDownloadButton").click();
+
+      if(document.getElementById("email_name") !== null) {
+        document.getElementById("email_name").setAttribute("value", name);
+      }
+
+      if(document.getElementById("email_address") !== null) {
+        document
+        .getElementById("email_address")
+        .setAttribute("value", email);
+        document.getElementById("email_address").value = email;
+      }
+      if(document.getElementById('download_email_step_hide_heading')) {
+        document.getElementById('gateDownloadButton').click();
+        return;
+      }
+      document.getElementById("email_to_downloads_next").click();
+    };
+
+    window.handleTikTok = function() {
+      console.log("TIKTOK");
+      window.handleFollowOptions("tiktok_status", "skipper_tk_next");
+    };
+
+    window.handleFacebook = function() {
+      console.log("FACEBOOK");
+      document.getElementById("fbCarouselSocialSection").click();
+    };
+
+    window.handleMultiPortal = function() {
+      document.getElementById("step_email").previousElementSibling.click();
+      window.handleEmail();
+    };
+
+    window.handleEmailSoundCloud = function() {
+      document.getElementById("step_email").previousElementSibling.click();
+      window.handleEmail();
+    };
+
+    window.handleSoundCloudYoutube = function() {
+      document.getElementById("step_yt").previousElementSibling.click();
+      window.handleYoutube();
+    };
+    window.handleMixcloud = function() {
+      console.log("Mixcloud");
+      document.getElementById("skipper_mc").click();
+    };
 
 
+    window.handleDonate = function() {
+      document.getElementById("step_dn").previousElementSibling.click();
+      document.getElementById("donation_next").click();
+    };
+
+
+    targetNode = document.getElementById("myCarousel");
+    const config = {attributes : true, childList : true, subtree : true};
     window.handleBandCamp = function() {
-        document.getElementById("skipper_bc").click()
-    }
+      document.getElementById("skipper_bc").click();
+    };
 
-    const targetNode = document.getElementById("myCarousel")
 
-  const config = {attributes : true, childList : true, subtree : true};
+    let prevStepContent = null;
+    const callback = (mutationList, observer) => {
+      for(const mutation of mutationList) {
+        if(mutation.type === "attributes") {
+          const stepContent = document.querySelector(
+          ".fangate-slider-content:not(.move-left)"
+          );
 
-  let prevStepContent = null;
-  const callback = (mutationList, observer) => {
-    for(const mutation of mutationList) {
-      if(mutation.type === "attributes") {
-        const stepContent = document.querySelector(
-        ".fangate-slider-content:not(.move-left)"
-        );
 
-        if(stepContent !== prevStepContent) {
-          const stepClassList = stepContent.classList;
+          if(stepContent !== prevStepContent) {
+            const stepClassList = stepContent.classList;
 
-                    if (stepClassList.contains("tk|ig")) {
-                        window.handleTikTok()
-                    }
+            if(stepClassList.contains("sp|ig|email")) {
+              window.handleMultiPortal();
+            }
 
-          if(stepClassList.contains("sp|ig|email")) {
-            window.handleMultiPortal();
+            if(stepClassList.contains("tk|ig")) {
+              window.handleTikTok();
+            }
+
+
+            if(stepClassList.contains("tk|ig")) {
+              window.handleTikTok();
+            }
+
+            if(stepClassList.contains("sp|ig|email")) {
+              window.handleMultiPortal();
+            }
+
+            if(stepClassList.contains("dn")) {
+              window.handleDonate();
+            }
+
+            if(stepClassList.contains("sc")) {
+              window.handleSoundCloud();
+            }
+
+            if(stepClassList.contains("ig")) {
+              window.handleInstagram();
+            }
+
+            if(stepClassList.contains("dw")) {
+              window.handleDownload();
+            }
+
+            if(stepClassList.contains("yt")) {
+              window.handleYoutube();
+            }
+
+            if(stepClassList.contains("sp")) {
+              window.handleSpotify();
+            }
+
+            if(stepClassList.contains("fb")) {
+              window.handleFacebook();
+            }
+
+            if(stepClassList.contains("mc")) {
+              window.handleMixcloud();
+            }
           }
 
-          if(stepClassList.contains("email|sc")) {
-            window.handleEmailSoundCloud();
+          if(stepClassList.contains("email")) {
+            window.handleEmail();
           }
 
-          if(stepClassList.contains("sc|yt")) {
-            window.handleSoundCloudYoutube();
-          }
 
-          if(stepClassList.contains("dn")) {
-            window.handleDonate();
-          }
-
-          if(stepClassList.contains("sc")) {
-            window.handleSoundCloud();
-          }
-
-          if(stepClassList.contains("ig")) {
-            window.handleInstagram();
-          }
-
-          if(stepClassList.contains("dw")) {
-            window.handleDownload();
-          }
-
-          if(stepClassList.contains("yt")) {
-            window.handleYoutube();
-          }
-
-          if(stepClassList.contains("sp")) {
-            window.handleSpotify();
-          }
-
-          if(stepClassList.contains("fb")) {
-            window.handleFacebook();
-          }
-
-          if(stepClassList.contains("mc")) {
-            window.handleMixcloud();
+          if(stepClassList.contains("bc")) {
+            window.handleBandCamp();
           }
         }
 
-        if(stepClassList.contains("email")) {
-          window.handleEmail();
-        }
-
-        if(stepClassList.contains("tk")) {
-          window.handleTikTok();
-        }
 
         if(stepClassList.contains("fb")) {
           window.handleFacebook();
         }
-
-                    if(stepClassList.contains("bc")) {
-                       window.handleBandCamp()
-                    }
       }
 
-      prevStepContent = stepContent;
-    }
+
+      if(stepClassList.contains("bc")) {
+        window.handleBandCamp();
+      }
+    };
+
+
+    prevStepContent = stepContent;
   };
 
-  // Fix: TypeError: MutationObserver.observe: Argument 1 is not an object.
+// Fix: TypeError: MutationObserver.observe: Argument 1 is not an object.
   if(targetNode) {
     const observer = new MutationObserver(callback);
 
@@ -493,4 +533,5 @@
   };
 
   setTimeout(_start, 800);
-})();
+})
+();
