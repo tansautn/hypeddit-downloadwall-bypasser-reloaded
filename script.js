@@ -1,7 +1,7 @@
 // ==UserScript==
-// @name         Hypeddit, PumpYourSound DownloadWallBypasser 2k24
+// @name         Hypeddit, PumpYourSound DownloadWallBypasser 2025
 // @namespace    http://tampermonkey.net/
-// @version      1.1-rcsfrC
+// @version      1.2
 // @description  Bypass the fangates. Soundcloud and Spotify accounts are mandatory! Please make sure to log them on first before running the script!
 // @author       fan1200, Zuko <tansautn@gmail.com>
 // @match        https://hypeddit.com/*
@@ -535,3 +535,4 @@
   setTimeout(_start, 800);
 })
 ();
+
