@@ -1,4 +1,10 @@
-# Hypeddit DownloadWallBypasser 2k24
+# Hypeddit DownloadWallBypasser
+
+## Current project state
+state
+
+- It seem fan2000 does not maintained his repo anymore (upstream of this repo, then i created PR for long long time but it is not merged yet)
+- So, I'd keep maintain this script here. Checkout Release for stable, tested script
 
 ## Description:
 This user script, named Hypeddit DownloadWallBypasser 2k24, is designed to bypass download gates on Hypeddit tracks. It automates the process of navigating through fangates that require interactions with various social media platforms like SoundCloud and Spotify, allowing users to download tracks without fulfilling these requirements manually.
