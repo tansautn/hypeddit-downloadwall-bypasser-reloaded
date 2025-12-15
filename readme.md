@@ -1,11 +1,16 @@
-# Hypeddit DownloadWallBypasser
+# Hypeddit Bypasser
+**It's can automate download process for you. On `Hyppedit`, `Pumpyoursound`.**
 
 ## Current project state
-state
 
-- It seem fan2000 does not maintained his repo anymore (upstream of this repo, then i created PR for long long time but it is not merged yet)
-- So, I'd keep maintain this script here. Checkout Release for stable, tested script
 
+- It seem fan2000 does not maintained his repo anymore (upstream of this repo, then i **created PR for years but it is not merged yet**)
+- **So, I'd keep maintain this script here**. Checkout  [Releases](../../releases) for stable, tested script
+
+## Changelog
+_What's changes impact to script behavior most will be listed_
+- `20251215`: Fixed `merged misstake` code syntax, correct statement blocks. Last tested working on hypp (a song only require SC fangate was picked for testing)
+  
 ## Description:
 This user script, named Hypeddit DownloadWallBypasser 2k24, is designed to bypass download gates on Hypeddit tracks. It automates the process of navigating through fangates that require interactions with various social media platforms like SoundCloud and Spotify, allowing users to download tracks without fulfilling these requirements manually.
 
@@ -54,3 +59,4 @@ window.hypedditSettings = {
 
 ## Disclaimer
 This script relays  heavily on HTML-elements like divs, classes and ids. When the webbuilder changes the page it could break this script. So please be aware of that. Some elements of the script are borrowed. But mostly is created from ground up with vanilla JS. I kind of got inspired by a snippet that was created by Zuko which provided a [userscript](https://gist.github.com/tansautn/d6abfbfcff5d7eb44fdb83f5abc89383) that would autoclick the Soundcloud part.
+
