@@ -48,6 +48,30 @@ jobs:
           git config user.email "action@github.com"
           git config user.name "GitHub Action"
 
+      - name: Resolve push branch
+        id: pushBranch
+        shell: bash
+        run: |
+          branch=""
+          # 1. GITHUB_REF_NAME when it is actually a branch (push / workflow_dispatch)
+          if git show-ref --quiet --verify "refs/remotes/origin/${{ github.ref_name }}" 2>/dev/null; then
+            branch="${{ github.ref_name }}"
+          fi
+          # 2. Repository default_branch from event payload (works for release events too)
+          if [[ -z "$branch" ]]; then
+            branch="${{ github.event.repository.default_branch }}"
+          fi
+          # 3. Ask origin what its HEAD branch is
+          if [[ -z "$branch" ]]; then
+            branch=$(git remote show origin 2>/dev/null | awk '/HEAD branch/ {print $NF}')
+          fi
+          # 4. Hard fallback: master → main
+          if [[ -z "$branch" ]]; then
+            git ls-remote --heads origin master &>/dev/null && branch="master" || branch="main"
+          fi
+          echo "branch=${branch}" >> $GITHUB_OUTPUT
+          echo "[pushBranch] target branch: ${branch}"
+
       - name: Update CHANGELOG.md (release only)
         if: ${{ steps.meta.outputs.isRelease == 'true' }}
         shell: bash
@@ -85,7 +109,7 @@ jobs:
           git add CHANGELOG.md
           if ! git diff --cached --quiet; then
             git commit -m "chore(changelog): update for ${ver} [skip ci]"
-            git push || true
+            git push origin HEAD:${{ steps.pushBranch.outputs.branch }} || true
           fi
 
       - name: Update README.md version table (release only)
@@ -122,7 +146,7 @@ jobs:
           git add README.md
           if ! git diff --cached --quiet; then
             git commit -m "docs(readme): update version table for ${ver} [skip ci]"
-            git push || true
+            git push origin HEAD:${{ steps.pushBranch.outputs.branch }} || true
           fi
 
   # ── 2a. Dev build: upload script.js as artifact ───────────────────────────
