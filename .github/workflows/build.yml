@@ -1,0 +1,208 @@
+name: Build and Release
+
+on:
+  push:
+    branches: [ master ]
+  release:
+    types: [ published ]
+
+permissions:
+  contents: write
+
+env:
+  SCRIPT_FILE:    script.js
+  RELEASE_FILE:   muzikDwlBypass3r.user.js
+
+jobs:
+  # ── 1. Prepare: version derivation + docs update ──────────────────────────
+  prepare:
+    name: Prepare metadata and docs
+    runs-on: ubuntu-latest
+    outputs:
+      version:   ${{ steps.meta.outputs.version }}
+      isRelease: ${{ steps.meta.outputs.isRelease }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - id: meta
+        name: Derive version
+        shell: bash
+        run: |
+          if [[ "${{ github.event_name }}" == "release" ]]; then
+            ver="${{ github.event.release.tag_name }}"
+            isRelease=true
+          else
+            short=$(git rev-parse --short HEAD)
+            ver="dev-${short}"
+            isRelease=false
+          fi
+          echo "version=${ver}"         >> $GITHUB_OUTPUT
+          echo "isRelease=${isRelease}" >> $GITHUB_OUTPUT
+
+      - name: Configure git author
+        run: |
+          git config user.email "action@github.com"
+          git config user.name "GitHub Action"
+
+      - name: Update CHANGELOG.md (release only)
+        if: ${{ steps.meta.outputs.isRelease == 'true' }}
+        shell: bash
+        run: |
+          set -e
+          ver='${{ steps.meta.outputs.version }}'
+          today=$(date +%Y-%m-%d)
+
+          last_release_tag=$(git tag --list --sort=-version:refname \
+            | grep -E '^[0-9]{4}\.' | head -n1 || true)
+
+          if [[ -z "$last_release_tag" ]]; then
+            raw_log=$(git log --pretty=format:'- %s (%h)')
+          else
+            raw_log=$(git log "${last_release_tag}..HEAD" --pretty=format:'- %s (%h)')
+          fi
+
+          git_log=$(echo "$raw_log" \
+            | grep -v "chore(changelog):" \
+            | sed -e 's/_/\\_/g' -e 's/\*/\\*/g' -e 's/#/\\#/g' -e 's/`/\\`/g')
+
+          if [[ -z "$git_log" ]]; then
+            git_log="- No notable changes"
+          fi
+
+          tmp2=$(mktemp)
+          awk -v header="## [${ver}] - ${today}" -v changelog="$git_log" '
+            NR==1 { print; next }
+            NR==2 && /^$/ { print; print header; print ""; print changelog; print ""; next }
+            NR==2 { print header; print ""; print changelog; print ""; print; next }
+            { print }
+          ' CHANGELOG.md > "$tmp2"
+          mv "$tmp2" CHANGELOG.md
+
+          git add CHANGELOG.md
+          if ! git diff --cached --quiet; then
+            git commit -m "chore(changelog): update for ${ver} [skip ci]"
+            git push || true
+          fi
+
+      - name: Update README.md version table (release only)
+        if: ${{ steps.meta.outputs.isRelease == 'true' }}
+        shell: bash
+        run: |
+          set -e
+          ver='${{ steps.meta.outputs.version }}'
+          today=$(date +%Y-%m-%d)
+
+          if ! grep -q "^| Version | Date | Notes |$" README.md 2>/dev/null; then
+            printf '\n## Versions\n\n| Version | Date | Notes |\n|---|---|---|\n' >> README.md
+          fi
+
+          tmp=$(mktemp)
+          awk -v ver="$ver" -v date="$today" '
+            BEGIN{printed=0}
+            {
+              print $0
+              if ($0 ~ /^\| Version \| Date \| Notes \|$/ && printed==0) {
+                getline; print $0
+                print "| " ver " | " date " | - |"
+                count=0
+                while (getline) {
+                  if ($0 ~ /^\|/) { count++; if (count<=8) print $0 }
+                  else { print $0 }
+                }
+                printed=1; exit
+              }
+            }
+          ' README.md > "$tmp"
+          mv "$tmp" README.md
+
+          git add README.md
+          if ! git diff --cached --quiet; then
+            git commit -m "docs(readme): update version table for ${ver} [skip ci]"
+            git push || true
+          fi
+
+  # ── 2a. Dev build: upload script.js as artifact ───────────────────────────
+  buildDev:
+    name: Build (dev) — upload artifact
+    needs: prepare
+    if: ${{ needs.prepare.outputs.isRelease != 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Upload script artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: hypeddit-bypasser-${{ needs.prepare.outputs.version }}
+          path: ${{ env.SCRIPT_FILE }}
+          retention-days: 7
+
+      - name: Keep only latest 3 dev artifacts
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const prefix = 'hypeddit-bypasser-dev-';
+            const { data } = await github.rest.actions.listArtifactsForRepo({
+              owner: context.repo.owner,
+              repo:  context.repo.repo,
+              per_page: 100,
+            });
+            const devArts = data.artifacts
+              .filter(a => a.name.startsWith(prefix))
+              .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+            if (devArts.length <= 3) return;
+            for (const art of devArts.slice(3)) {
+              try {
+                await github.rest.actions.deleteArtifact({
+                  owner:       context.repo.owner,
+                  repo:        context.repo.repo,
+                  artifact_id: art.id,
+                });
+                core.info(`Deleted old artifact: ${art.name}`);
+              } catch (e) {
+                core.warning(`Failed to delete ${art.name}: ${e.message}`);
+              }
+            }
+
+  # ── 2b. Release build: patch version, rename, attach to Release ───────────
+  buildRelease:
+    name: Build (release) — attach to Release
+    needs: prepare
+    if: ${{ needs.prepare.outputs.isRelease == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Patch @version in script and copy to release filename
+        shell: bash
+        run: |
+          set -e
+          # Derive version: prefer release tag, fall back to latest numeric tag
+          ver="${{ needs.prepare.outputs.version }}"
+          if [[ -z "$ver" || "$ver" == dev-* ]]; then
+            ver=$(git tag --list --sort=-version:refname \
+              | grep -E '^[0-9]{4}\.' | head -n1)
+          fi
+          echo "Patching @version → ${ver}"
+
+          # Strip any -dev-XXXX suffix that might have slipped through,
+          # then force the correct release version
+          sed -i \
+            "s|^\(// @version\s\+\).*|\1${ver}|" \
+            "${{ env.SCRIPT_FILE }}"
+
+          cp "${{ env.SCRIPT_FILE }}" "${{ env.RELEASE_FILE }}"
+
+      - name: Upload script to Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ${{ env.RELEASE_FILE }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

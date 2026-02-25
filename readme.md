@@ -1,5 +1,7 @@
 # Hypeddit Bypasser
-**It's can automate download process for you. On `Hyppedit`, `Pumpyoursound`.**
+**Automates the download process on `Hypeddit` and `PumpYourSound`.**
+
+[![Install Latest](https://img.shields.io/badge/Install-Latest%20Release-brightgreen)](https://github.com/tansautn/hypeddit-downloadwall-bypasser-reloaded/releases/latest/download/muzikDwlBypass3r.user.js)
 
 ## Current project state
 
@@ -22,13 +24,12 @@ To use this script effectively, users must ensure the following:
 This script can be used on Hypeddit's website to bypass download gates encountered when attempting to download tracks. It targets specific URLs related to Hypeddit tracks and SoundCloud login pages, ensuring seamless navigation through the download process.
 
 ## Installation:
-1. Install a userscript manager extension like Tampermonkey for your browser.
-2. Create a new userscript.
-3. Copy and paste the script code provided above into the userscript editor.
-4. Save the script, ensuring that it is enabled.
-5. Visit a Hypeddit track page and let the script automatically bypass the download gates.
+1. Install [Tampermonkey](https://www.tampermonkey.net/) for your browser.
+2. Click **[Install Latest Release](https://github.com/tansautn/hypeddit-downloadwall-bypasser-reloaded/releases/latest/download/muzikDwlBypass3r.user.js)** — Tampermonkey will prompt you to install.
+3. Visit a Hypeddit track page and let the script run.
 
-**Note**: Always exercise caution when running userscripts from unknown sources.
+> The install link always points to the latest stable release via GitHub's `releases/latest/download/` redirect.
+> Updates are detected automatically through the `@updateURL` header.
 
 ## FAQ
 
@@ -59,4 +60,20 @@ window.hypedditSettings = {
 
 ## Disclaimer
 This script relays  heavily on HTML-elements like divs, classes and ids. When the webbuilder changes the page it could break this script. So please be aware of that. Some elements of the script are borrowed. But mostly is created from ground up with vanilla JS. I kind of got inspired by a snippet that was created by Zuko which provided a [userscript](https://gist.github.com/tansautn/d6abfbfcff5d7eb44fdb83f5abc89383) that would autoclick the Soundcloud part.
+
+## Versions
+
+| Version | Date | Notes |
+|---|---|---|
+| 2.1.2 | 2025-12-15 | Fixed merged mistake, statement blocks |
+
+## Contributing / Development
+
+Want to contribute or test changes locally? See **[development.md](./development.md)** for the full setup guide:
+
+- Local HTTPS dev server via Vite (`pnpm dev`)
+- Live reload trick via Tampermonkey `@require`
+- ESLint with full GM/Tampermonkey globals
+- CI release flow
+
 

@@ -1,0 +1,23 @@
+#!/bin/sh
+# pre-commit: strip -dev-XXXX suffix from @version in script.js before commit.
+# This prevents dev-mode version strings from leaking into the repo history.
+
+SCRIPT="script.js"
+
+if git diff --cached --name-only | grep -qx "$SCRIPT"; then
+  node --input-type=module <<'EOF'
+import fs from 'fs';
+
+const path = 'script.js';
+const content = fs.readFileSync(path, 'utf-8');
+// Strip -dev-<4+chars> suffix from @version, e.g. "2026.2.1.2-dev-a3f9" → "2026.2.1.2"
+const fixed = content.replace(/(\/\/ @version\s+\S+?)-dev-[A-Za-z0-9]+/g, '$1');
+
+if (fixed !== content) {
+  fs.writeFileSync(path, fixed, 'utf-8');
+  const { execSync } = await import('child_process');
+  execSync(`git add ${path}`);
+  console.log('[pre-commit] Stripped -dev suffix from @version in ' + path);
+}
+EOF
+fi

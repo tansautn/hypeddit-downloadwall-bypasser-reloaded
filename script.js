@@ -189,34 +189,34 @@
           .replace('fangateStep--', '');
         console.info(stepLabel, curStep, curStep.classList.contains('done'), curStep.classList.contains('pull-left'));
         switch (stepLabel) {
-          case 'soundcloud':
-          case 'facebook':
-            // TODO : use post message API to communicate with child windows.
-            // TODO : sessionStorage set value to check the connect process ?? - still does not work between windows
-            // TODO : youtube does not require any validation. So just close it's modal
-            // TODO : facebook need what to mark as done?, are okay when we simulate the form submit?
-            setTimeout((function pumpSimpleStepHandler() {
-              return () => {
-                console.warn(!document.querySelector('#soundcloud-api') || !isDomLoaded, !document.querySelector('#soundcloud-api'), !isDomLoaded);
-                if (!document.querySelector('#soundcloud-api') || !isDomLoaded || !SC) {
-                  setTimeout(pumpSimpleStepHandler(), 300);
-                  console.info('no SC api or dom not ready yet, try in next 300 ms');
-                  return;
-                }
-                if (!localStorage.getItem('useAlternate')) {
-                  console.info('button is : ', curEl.querySelector('.socBtn'));
-                  curEl.querySelector('.socBtn').click();
-                  console.info('trigger click for ' + stepLabel);
-                }
-                else {
-                  alternateMethodForPump();
-                }
-              };
-            })(), 300);
-            break;
-          case 'comment':
-            setTimeout(commentPump, 300);
-            break;
+        case 'soundcloud':
+        case 'facebook':
+          // TODO : use post message API to communicate with child windows.
+          // TODO : sessionStorage set value to check the connect process ?? - still does not work between windows
+          // TODO : youtube does not require any validation. So just close it's modal
+          // TODO : facebook need what to mark as done?, are okay when we simulate the form submit?
+          setTimeout((function pumpSimpleStepHandler() {
+            return () => {
+              console.warn(!document.querySelector('#soundcloud-api') || !isDomLoaded, !document.querySelector('#soundcloud-api'), !isDomLoaded);
+              if (!document.querySelector('#soundcloud-api') || !isDomLoaded || !SC) {
+                setTimeout(pumpSimpleStepHandler(), 300);
+                console.info('no SC api or dom not ready yet, try in next 300 ms');
+                return;
+              }
+              if (!localStorage.getItem('useAlternate')) {
+                console.info('button is : ', curEl.querySelector('.socBtn'));
+                curEl.querySelector('.socBtn').click();
+                console.info('trigger click for ' + stepLabel);
+              }
+              else {
+                alternateMethodForPump();
+              }
+            };
+          })(), 300);
+          break;
+        case 'comment':
+          setTimeout(commentPump, 300);
+          break;
         }
         window.isPumpHandled = true;
       }

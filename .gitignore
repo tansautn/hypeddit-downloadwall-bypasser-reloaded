@@ -5,3 +5,6 @@
 ._*
 
 Thumbs.db
+node_modules/
+dist/
+.pnpm-store/

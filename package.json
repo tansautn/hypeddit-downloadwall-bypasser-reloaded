@@ -1,0 +1,28 @@
+{
+  "name": "hypeddit-downloadwall-bypasser-reloaded",
+  "version": "1.0.0",
+  "description": "Bypass download gates on Hypeddit and PumpYourSound",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "lint": "eslint script.js",
+    "lint:fix": "eslint script.js --fix",
+    "prepare": "husky"
+  },
+  "keywords": [
+    "userscript",
+    "tampermonkey",
+    "hypeddit"
+  ],
+  "author": "tansautn",
+  "license": "MIT",
+  "packageManager": "pnpm@10.15.1",
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@vitejs/plugin-basic-ssl": "^2.1.4",
+    "eslint": "^10.0.2",
+    "globals": "^17.3.0",
+    "husky": "^9.1.7",
+    "vite": "^7.3.1"
+  }
+}
