@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Hypeddit, PumpYourSound DownloadWallBypasser 2026
 // @namespace    http://tampermonkey.net/
-// @version      2.1
+// @version      2.1.2
 // @description  Bypass the fangates. Soundcloud and Spotify accounts are mandatory! Please make sure to log them on first before running the script!
 // @author       fan1200, Zuko <tansautn@gmail.com>
 // @match        https://hypeddit.com/*
@@ -9,9 +9,13 @@
 // @match        https://secure.soundcloud.com/connect*
 // @match        https://secure.soundcloud.com/authorize*
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=hypeddit.com
+// @downloadURL  https://raw.githubusercontent.com/tansautn/hypeddit-downloadwall-bypasser-reloaded/refs/heads/master/script.js
+// @updateURL  https://raw.githubusercontent.com/tansautn/hypeddit-downloadwall-bypasser-reloaded/refs/heads/master/script.js
 // @grant        unsafeWindow
 // @grant        window.close
 // ==/UserScript==
+
+// last updated : 20260225
 
 (function() {
   "use strict";
@@ -77,8 +81,8 @@
             'X-Requested-With' : 'XMLHttpRequest'
           }
         })
-        .then(response => response.text())
-        .then(data => {
+          .then(response => response.text())
+          .then(data => {
           console.info('response data', data);
           try {
             data = JSON.parse(data);
@@ -106,16 +110,16 @@
           });
         })
         //        .then(response => response.json())
-        .then(data => {
+          .then(data => {
           console.info('done');
           data.text().then(text => {console.error(text);});
           // What should here ?
           // window.location.reload();
         })
-        .catch(error => {
+          .catch(error => {
           console.error('Error in fetch operation:', error);
         })
-        .finally(() => {
+          .finally(() => {
           localStorage.removeItem('isPumpConnectDone');
         });
       }
@@ -162,8 +166,8 @@
         }
 
         stepLabel = Array.from(curStep.classList)
-                         .find(v => v.includes('fangateStep--'))
-                         .replace('fangateStep--', '');
+          .find(v => v.includes('fangateStep--'))
+          .replace('fangateStep--', '');
         console.info(stepLabel, curStep, curStep.classList.contains('done'), curStep.classList.contains('pull-left'));
         switch(stepLabel) {
           case 'soundcloud':
@@ -173,6 +177,24 @@
             // TODO : youtube does not require any validation. So just close it's modal
             // TODO : facebook need what to mark as done?, are okay when we simulate the form submit?
             setTimeout((function pumpSimpleStepHandler() {
+              function commentPump() {
+                console.warn(!document.querySelector('#soundcloud-api') || !isDomLoaded, !document.querySelector('#soundcloud-api'), !isDomLoaded);
+                if(!document.querySelector('#soundcloud-api') || !isDomLoaded || !SC) {
+                  setTimeout(commentPump, 300);
+                  console.info('no SC api or dom not ready yet, try in next 200 ms');
+                  return;
+                }
+                // localStorage.setItem('pumpFanGateId', (new URLSearchParams(button.dataset.href.split('?')[1]).get('fangateId')));
+                curEl.querySelector('input[name="fangate_comment"]').value = window.hypedditSettings.comment;
+                const button = curEl.querySelector('.btn.fangatex__sendComment');
+                if(!localStorage.getItem('useAlternate')) {
+                  console.info('trigger Comment click for ' + stepLabel);
+                  button.click();
+                }
+                else {
+                  alternateMethodForPump();
+                }
+              };
               return () => {
                 console.warn(!document.querySelector('#soundcloud-api') || !isDomLoaded, !document.querySelector('#soundcloud-api'), !isDomLoaded);
                 if(!document.querySelector('#soundcloud-api') || !isDomLoaded || !SC) {
@@ -192,24 +214,6 @@
             })(), 300);
             break;
           case 'comment':
-            const commentPump = () => {
-              console.warn(!document.querySelector('#soundcloud-api') || !isDomLoaded, !document.querySelector('#soundcloud-api'), !isDomLoaded);
-              if(!document.querySelector('#soundcloud-api') || !isDomLoaded || !SC) {
-                setTimeout(commentPump, 300);
-                console.info('no SC api or dom not ready yet, try in next 200 ms');
-                return;
-              }
-              // localStorage.setItem('pumpFanGateId', (new URLSearchParams(button.dataset.href.split('?')[1]).get('fangateId')));
-              curEl.querySelector('input[name="fangate_comment"]').value = window.hypedditSettings.comment;
-              const button = curEl.querySelector('.btn.fangatex__sendComment');
-              if(!localStorage.getItem('useAlternate')) {
-                console.info('trigger Comment click for ' + stepLabel);
-                button.click();
-              }
-              else {
-                alternateMethodForPump();
-              }
-            };
             setTimeout(commentPump, 300);
             break;
         }
@@ -285,9 +289,9 @@
     if(document.getElementById(containerElementId) !== null) {
       console.log(`finding ${skipperId} in #${containerElementId}`);
       document
-      .getElementById(containerElementId)
-      .querySelectorAll("a")
-      .forEach((accountItem) => {
+        .getElementById(containerElementId)
+        .querySelectorAll("a")
+        .forEach((accountItem) => {
         accountItem.classList.remove("undone");
         accountItem.classList.add("done");
       });
@@ -302,12 +306,12 @@
 
     if(document.getElementById("sc_comment_text") !== null) {
       document
-      .getElementById("sc_comment_text")
-      .setAttribute("value", comment);
+        .getElementById("sc_comment_text")
+        .setAttribute("value", comment);
     }
-//        if(document.getElementById("step_sc") !== null) {
-//          document.getElementById("step_sc").querySelector("a").click();
-//        }
+    //        if(document.getElementById("step_sc") !== null) {
+    //          document.getElementById("step_sc").querySelector("a").click();
+    //        }
     if(document.getElementById("step_sc") !== null) {
       document.getElementById("step_sc").querySelector("a#login_to_sc").click();
     }
@@ -337,8 +341,8 @@
 
     if(document.getElementById("email_address") !== null) {
       document
-      .getElementById("email_address")
-      .setAttribute("value", email);
+        .getElementById("email_address")
+        .setAttribute("value", email);
       document.getElementById("email_address").value = email;
     }
     if(document.getElementById('download_email_step_hide_heading')) {
@@ -388,7 +392,7 @@
     for(const mutation of mutationList) {
       if(mutation.type === "attributes") {
         const stepContent = document.querySelector(
-        ".fangate-slider-content:not(.move-left)"
+          ".fangate-slider-content:not(.move-left)"
         );
 
 
